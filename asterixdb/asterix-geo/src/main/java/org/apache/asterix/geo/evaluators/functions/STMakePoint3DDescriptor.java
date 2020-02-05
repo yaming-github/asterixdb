@@ -115,6 +115,12 @@ public class STMakePoint3DDescriptor extends AbstractGetValDescriptor {
                 point.setY(getVal(bytes1, offset1));
                 point.setZ(getVal(bytes2, offset2));
                 AGeometrySerializerDeserializer.INSTANCE.serialize(pointGeometry, out);
+//                out.writeInt(29);
+//                out.writeByte(0);
+//                out.writeInt(1);
+//                out.writeDouble(getVal(bytes0, offset0));
+//                out.writeDouble(getVal(bytes1, offset1));
+//                out.writeDouble(getVal(bytes2, offset2));
             } catch (IOException e1) {
                 throw HyracksDataException.create(e1);
             }

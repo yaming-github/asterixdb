@@ -30,7 +30,7 @@ import com.esri.core.geometry.MultiVertexGeometry;
 import com.esri.core.geometry.Point;
 import com.esri.core.geometry.ogc.OGCGeometry;
 
-public class STNPointsDescriptor extends AbstractSTSingleGeometryDescriptor {
+public class STNPointsDescriptor extends AbstractSTSingleGeometryDescriptor1 {
 
     private static final long serialVersionUID = 1L;
     public static final IFunctionDescriptorFactory FACTORY = new IFunctionDescriptorFactory() {
@@ -40,31 +40,110 @@ public class STNPointsDescriptor extends AbstractSTSingleGeometryDescriptor {
         }
     };
 
+//    @Override
+//    protected Object evaluateOGCGeometry(OGCGeometry geometry) throws HyracksDataException {
+//        Geometry esriGeometry = geometry.getEsriGeometry();
+//        if (esriGeometry instanceof MultiVertexGeometry) {
+//            return ((MultiVertexGeometry) esriGeometry).getPointCount();
+//        } else if (esriGeometry instanceof Point) {
+//            return 1;
+//        } else if (esriGeometry == null) {
+//            int count = 0;
+//            GeometryCursor geometryCursor = geometry.getEsriGeometryCursor();
+//            esriGeometry = geometryCursor.next();
+//            while (esriGeometry != null) {
+//                if (esriGeometry instanceof MultiVertexGeometry) {
+//                    count += ((MultiVertexGeometry) esriGeometry).getPointCount();
+//                } else if (esriGeometry instanceof Point) {
+//                    count += 1;
+//                }
+//                esriGeometry = geometryCursor.next();
+//            }
+//            return count;
+//        } else if (geometry.isEmpty()) {
+//            return 0;
+//        } else {
+//            throw new UnsupportedOperationException(
+//                    "The operation " + getIdentifier() + " is not supported for the type " + geometry.geometryType());
+//        }
+//    }
+
     @Override
-    protected Object evaluateOGCGeometry(OGCGeometry geometry) throws HyracksDataException {
-        Geometry esriGeometry = geometry.getEsriGeometry();
-        if (esriGeometry instanceof MultiVertexGeometry) {
-            return ((MultiVertexGeometry) esriGeometry).getPointCount();
-        } else if (esriGeometry instanceof Point) {
-            return 1;
-        } else if (esriGeometry == null) {
-            int count = 0;
-            GeometryCursor geometryCursor = geometry.getEsriGeometryCursor();
-            esriGeometry = geometryCursor.next();
-            while (esriGeometry != null) {
-                if (esriGeometry instanceof MultiVertexGeometry) {
-                    count += ((MultiVertexGeometry) esriGeometry).getPointCount();
-                } else if (esriGeometry instanceof Point) {
-                    count += 1;
+    protected Object evaluateOGCGeometry(byte[] bytes, int offset) throws HyracksDataException {
+        int wkbType = bytes[offset] & 0xFF |
+                (bytes[offset + 1] & 0xFF) << 8 |
+                (bytes[offset + 2] & 0xFF) << 16 |
+                (bytes[offset + 3] & 0xFF) << 24;
+        offset += 4;
+        switch(wkbType){
+            case 1:
+                return 1;
+            case 2:
+            case 4:
+                return bytes[offset] & 0xFF |
+                        (bytes[offset + 1] & 0xFF) << 8 |
+                        (bytes[offset + 2] & 0xFF) << 16 |
+                        (bytes[offset + 3] & 0xFF) << 24;
+            case 3:
+                int numRings = bytes[offset] & 0xFF |
+                        (bytes[offset + 1] & 0xFF) << 8 |
+                        (bytes[offset + 2] & 0xFF) << 16 |
+                        (bytes[offset + 3] & 0xFF) << 24;
+                int count = 0;
+                offset += 4;
+                int num;
+                for(int i = 0;i < numRings;i++){
+                    num = bytes[offset] & 0xFF |
+                            (bytes[offset + 1] & 0xFF) << 8 |
+                            (bytes[offset + 2] & 0xFF) << 16 |
+                            (bytes[offset + 3] & 0xFF) << 24;
+                    count += num - 1;
+                    offset += 4 + num * 16;
                 }
-                esriGeometry = geometryCursor.next();
-            }
-            return count;
-        } else if (geometry.isEmpty()) {
-            return 0;
-        } else {
-            throw new UnsupportedOperationException(
-                    "The operation " + getIdentifier() + " is not supported for the type " + geometry.geometryType());
+                return count;
+            case 5:
+                int numLineStrings = bytes[offset] & 0xFF |
+                        (bytes[offset + 1] & 0xFF) << 8 |
+                        (bytes[offset + 2] & 0xFF) << 16 |
+                        (bytes[offset + 3] & 0xFF) << 24;
+                offset += 4;
+                count = 0;
+                for(int i = 0;i < numLineStrings;i++){
+                    offset += 5;
+                    num = bytes[offset] & 0xFF |
+                            (bytes[offset + 1] & 0xFF) << 8 |
+                            (bytes[offset + 2] & 0xFF) << 16 |
+                            (bytes[offset + 3] & 0xFF) << 24;
+                    count += num;
+                    offset += 4 + num * 16;
+                }
+                return count;
+            case 6:
+                int numPolygons = bytes[offset] & 0xFF |
+                        (bytes[offset + 1] & 0xFF) << 8 |
+                        (bytes[offset + 2] & 0xFF) << 16 |
+                        (bytes[offset + 3] & 0xFF) << 24;
+                offset += 4;
+                count = 0;
+                for(int i = 0;i < numPolygons;i++){
+                    offset += 5;
+                    numRings = bytes[offset] & 0xFF |
+                            (bytes[offset + 1] & 0xFF) << 8 |
+                            (bytes[offset + 2] & 0xFF) << 16 |
+                            (bytes[offset + 3] & 0xFF) << 24;
+                    offset += 4;
+                    for(int j = 0;j < numRings;j++){
+                        num = bytes[offset] & 0xFF |
+                                (bytes[offset + 1] & 0xFF) << 8 |
+                                (bytes[offset + 2] & 0xFF) << 16 |
+                                (bytes[offset + 3] & 0xFF) << 24;
+                        count += num - 1;
+                        offset += 4 + num * 16;
+                    }
+                }
+                return count;
+            default:
+                throw new UnsupportedOperationException("The operation is not supported for the type ");
         }
     }
 

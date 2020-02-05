@@ -26,7 +26,7 @@ import org.apache.hyracks.api.exceptions.HyracksDataException;
 
 import com.esri.core.geometry.ogc.OGCGeometry;
 
-public class STGeomentryTypeDescriptor extends AbstractSTSingleGeometryDescriptor {
+public class STGeomentryTypeDescriptor extends AbstractSTSingleGeometryDescriptor1 {
 
     private static final long serialVersionUID = 1L;
     public static final IFunctionDescriptorFactory FACTORY = new IFunctionDescriptorFactory() {
@@ -36,9 +36,35 @@ public class STGeomentryTypeDescriptor extends AbstractSTSingleGeometryDescripto
         }
     };
 
+//    @Override
+//    protected Object evaluateOGCGeometry(OGCGeometry geometry) throws HyracksDataException {
+//        return geometry.geometryType();
+//    }
+
     @Override
-    protected Object evaluateOGCGeometry(OGCGeometry geometry) throws HyracksDataException {
-        return geometry.geometryType();
+    protected Object evaluateOGCGeometry(byte[] bytes, int offset) throws HyracksDataException {
+        int wkbType = bytes[offset] & 0xFF |
+                (bytes[offset + 1] & 0xFF) << 8 |
+                (bytes[offset + 2] & 0xFF) << 16 |
+                (bytes[offset + 3] & 0xFF) << 24;
+        switch(wkbType){
+            case 1:
+                return "Point";
+            case 2:
+                return "LineString";
+            case 3:
+                return "Polygon";
+            case 4:
+                return "MultiPoint";
+            case 5:
+                return "MultiLineString";
+            case 6:
+                return "MultiPolygon";
+            case 7:
+                return "GeometryCollection";
+            default:
+                throw new UnsupportedOperationException("The operation is not supported for the type.");
+        }
     }
 
     @Override

@@ -41,6 +41,8 @@ import com.esri.core.geometry.Envelope;
 import com.esri.core.geometry.SpatialReference;
 import com.esri.core.geometry.ogc.OGCGeometry;
 
+//import edu.ucr.cs.bdlab.geolite.Envelope;
+
 public class STMakeEnvelopeDescriptorSRID extends AbstractGetValDescriptor {
 
     public static final IFunctionDescriptorFactory FACTORY = new IFunctionDescriptorFactory() {
@@ -131,11 +133,30 @@ public class STMakeEnvelopeDescriptorSRID extends AbstractGetValDescriptor {
                                         new Envelope(getVal(data0, offset0), getVal(data1, offset1),
                                                 getVal(data2, offset2), getVal(data3, offset3)),
                                         SpatialReference.create((int) getVal(data4, offset4)));
+//                double minCoord[] = {getVal(data2, offset2), getVal(data3, offset3)};
+//                double maxCoord[] = {getVal(data0, offset0), getVal(data1, offset1)};
+//                Envelope envelope = new Envelope(minCoord, maxCoord);
                 ByteBuffer buffer = ogcGeometry.asBinary();
+//                ByteBuffer buffer = envelope.toWKB();
                 byte[] bytes = buffer.array();
                 out.writeByte(ATypeTag.SERIALIZED_GEOMETRY_TYPE_TAG);
                 out.writeInt(bytes.length);
                 out.write(bytes);
+//                out.writeInt(93);
+//                out.writeByte(0);
+//                out.writeInt(3);
+//                out.writeInt(1);
+//                out.writeInt(5);
+//                out.writeDouble(getVal(data2, offset2));
+//                out.writeDouble(getVal(data3, offset3));
+//                out.writeDouble(getVal(data0, offset0));
+//                out.writeDouble(getVal(data3, offset3));
+//                out.writeDouble(getVal(data0, offset0));
+//                out.writeDouble(getVal(data1, offset1));
+//                out.writeDouble(getVal(data2, offset2));
+//                out.writeDouble(getVal(data1, offset1));
+//                out.writeDouble(getVal(data2, offset2));
+//                out.writeDouble(getVal(data3, offset3));
                 result.set(resultStorage);
             } catch (IOException e) {
                 throw new InvalidDataFormatException(sourceLoc, getIdentifier(), e,

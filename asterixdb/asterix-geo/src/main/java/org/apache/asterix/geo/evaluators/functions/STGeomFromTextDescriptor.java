@@ -24,6 +24,9 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import edu.ucr.cs.bdlab.geolite.IGeometry;
+import edu.ucr.cs.bdlab.wktparser.ParseException;
+import edu.ucr.cs.bdlab.wktparser.WKTParser;
 import org.apache.asterix.dataflow.data.nontagged.serde.AStringSerializerDeserializer;
 import org.apache.asterix.om.functions.BuiltinFunctions;
 import org.apache.asterix.om.functions.IFunctionDescriptor;
@@ -114,6 +117,10 @@ public class STGeomFromTextDescriptor extends AbstractScalarFunctionDynamicDescr
                 structure = wktImporter.executeOGC(WktImportFlags.wktImportNonTrusted, geometry, null);
                 OGCGeometry ogcGeometry = OGCGeometry.createFromOGCStructure(structure, SpatialReference.create(4326));
                 ByteBuffer buffer = ogcGeometry.asBinary();
+//                WKTParser wktParser = new WKTParser();
+//                IGeometry geom = wktParser.parse(geometry, null);
+//                ByteBuffer buffer = ByteBuffer.allocate(16384);
+//                buffer = geom.toWKB(buffer);
                 byte[] wKBGeometryBuffer = buffer.array();
                 out.writeByte(ATypeTag.SERIALIZED_GEOMETRY_TYPE_TAG);
                 out.writeInt(wKBGeometryBuffer.length);

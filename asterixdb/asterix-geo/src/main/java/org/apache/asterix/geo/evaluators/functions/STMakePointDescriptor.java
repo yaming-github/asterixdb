@@ -106,6 +106,11 @@ public class STMakePointDescriptor extends AbstractGetValDescriptor {
                 point.setX(getVal(bytes0, offset0));
                 point.setY(getVal(bytes1, offset1));
                 AGeometrySerializerDeserializer.INSTANCE.serialize(pointGeometry, out);
+//                out.writeInt(21);
+//                out.writeByte(0);
+//                out.writeInt(1);
+//                out.writeDouble(getVal(bytes0, offset0));
+//                out.writeDouble(getVal(bytes1, offset1));
             } catch (IOException e1) {
                 throw HyracksDataException.create(e1);
             }
